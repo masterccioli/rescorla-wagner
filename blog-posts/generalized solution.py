@@ -45,7 +45,7 @@ def rw_update(V,c,r,alpha,beta):
     return V + c.T @ (alpha * beta * (r - (c @ V)))
 
 vs = []
-for i in range(10):
+for i in range(50):
     # shuffle(train_c_r)
     for i in np.arange(c.shape[0]):
         V = rw_update(V, c[i:i+1,:], r[i:i+1,:], alpha, beta)
@@ -72,7 +72,7 @@ V_2 = np.ones((3,1)) * .1
 
 vs_1 = []
 vs_2 = []
-for i in range(10):
+for i in range(50):
 
     for i in np.arange(c.shape[0]):
         if i < 2:
@@ -102,7 +102,7 @@ plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
 # Project cue field into an arbitrarly high dimensional random vector space
 
 # projection matrix - 3 orthogonal vectors
-d = 1000
+d = 50
 projection = np.random.normal(loc = 0, scale = 1/np.sqrt(d), size = (c.shape[1], d))
 c_ = c @ projection
 
@@ -113,7 +113,7 @@ V_2 = np.ones((d,1)) * .1
 
 vs_1 = []
 vs_2 = []
-for i in range(10):
+for i in range(50):
 
     for i in np.arange(c.shape[0]):
         if i < 2:
@@ -164,7 +164,6 @@ for i in range(50):
     vs_1.append(V_1[:,:,np.newaxis])
     vs_2.append(V_2[:,:,np.newaxis])
 
-test = vs_1[0][:,:,np.newaxis]
 vs_1 = np.concatenate(vs_1, axis=-1)
 vs_2 = np.concatenate(vs_2, axis=-1)
 
@@ -189,36 +188,36 @@ d_r = 50
 d_c = 50
 projection_r = np.random.normal(loc = 0, scale = 1/np.sqrt(d), size = (r.shape[1], d))
 projection_c = np.random.normal(loc = 0, scale = 1/np.sqrt(d), size = (c.shape[1], d))
-r_ = r @ projection
+r_ = r @ projection_r
+c_ = c @ projection_c
 
 
-V_1 = np.ones((3,d)) * .1
-V_2 = np.ones((3,d)) * .1
+V_1 = np.ones((d_c,d_r)) * .1
+V_2 = np.ones((d_c,d_r)) * .1
 
 
 vs_1 = []
 vs_2 = []
-for i in range(10):
+for i in range(50):
 
     for i in np.arange(c.shape[0]):
         if i < 2:
-            V_1 = rw_update(V_1, c[i:i+1,:], r_[i:i+1,:], alpha, beta)
+            V_1 = rw_update(V_1, c_[i:i+1,:], r_[i:i+1,:], alpha, beta)
         else:
-            V_2 = rw_update(V_2, c[i:i+1,:], r_[i:i+1,:], alpha, beta)
+            V_2 = rw_update(V_2, c_[i:i+1,:], r_[i:i+1,:], alpha, beta)
 
     vs_1.append(V_1[:,:,np.newaxis])
     vs_2.append(V_2[:,:,np.newaxis])
 
-test = vs_1[0][:,:,np.newaxis]
 vs_1 = np.concatenate(vs_1, axis=-1)
 vs_2 = np.concatenate(vs_2, axis=-1)
 
 acts = []
-acts.append(np.tensordot(c[:2], vs_1, axes=([1],[0])))
-acts.append(np.tensordot(c[2:], vs_2, axes=([1],[0])))
+acts.append(np.tensordot(c_[:2], vs_1, axes=([1],[0])))
+acts.append(np.tensordot(c_[2:], vs_2, axes=([1],[0])))
 acts = np.concatenate(acts, axis=0)
 
-out = np.sqrt((np.subtract(acts, projection[:,:,np.newaxis])**2).sum(1))
+out = np.sqrt((np.subtract(acts, projection_r[:,:,np.newaxis])**2).sum(1))
 x = np.arange(out.shape[1])
 plt.figure(num = 3, figsize=(8, 5))
 for ind in np.arange(out.shape[0]):
